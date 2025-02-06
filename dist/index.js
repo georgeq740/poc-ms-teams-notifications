@@ -34688,16 +34688,18 @@ async function sendNotification() {
             (notifyOn === 'failure' && jobStatus !== 'success') || 
             (notifyOn === 'success' && jobStatus === 'success')) {
 
-            // 🔹 Definir color según estado
+            // 🔹 Definir color y mensaje según estado
             let color = "00FF00"; // Verde para éxito
-            let statusEmoji = "✅"; // Emoji de check verde
+            let statusEmoji = "✅"; // Check verde
+            let failureMessage = ""; // Mensaje adicional si falla
 
             if (jobStatus !== "success") {
                 color = "FF0000"; // Rojo para fallo
-                statusEmoji = "❌"; // Emoji de error rojo
+                statusEmoji = "❌"; // Cruz roja
+                failureMessage = "\n⚠️ **Tarea pendiente:** Revisar logs y corregir errores."; // Mensaje extra
             }
 
-            // 🔹 Crear payload para Microsoft Teams
+            // 🔹 Crear payload para Microsoft Teams con sección de fallo
             const payload = {
                 "@type": "MessageCard",
                 "@context": "http://schema.org/extensions",
@@ -34725,6 +34727,14 @@ async function sendNotification() {
                     "markdown": true
                 }]
             };
+
+            // 🔹 Si falló, agregar sección de "Tarea Pendiente"
+            if (jobStatus !== "success") {
+                payload.sections.push({
+                    "activityTitle": "🚨 **Acción Requerida**",
+                    "text": failureMessage
+                });
+            }
 
             // 🔹 Enviar la notificación a Microsoft Teams
             await axios.post(webhookUrl, payload);
