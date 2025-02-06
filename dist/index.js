@@ -34683,12 +34683,50 @@ async function sendNotification() {
         const jobStatus = core.getInput('job_status'); // Estado del job en GitHub Actions
 
         console.log(`📢 Notification settings - notify_on: ${notifyOn}, job_status: ${jobStatus}`);
-        
+
         if (notifyOn === 'both' || 
             (notifyOn === 'failure' && jobStatus !== 'success') || 
             (notifyOn === 'success' && jobStatus === 'success')) {
 
-            const payload = { text: message };
+            // 🔹 Definir color según estado
+            let color = "00FF00"; // Verde para éxito
+            let statusEmoji = "✅"; // Emoji de check verde
+
+            if (jobStatus !== "success") {
+                color = "FF0000"; // Rojo para fallo
+                statusEmoji = "❌"; // Emoji de error rojo
+            }
+
+            // 🔹 Crear payload para Microsoft Teams
+            const payload = {
+                "@type": "MessageCard",
+                "@context": "http://schema.org/extensions",
+                "themeColor": color,
+                "summary": "GitHub Actions Job Notification",
+                "sections": [{
+                    "activityTitle": `${statusEmoji} **GitHub Actions Workflow Finished!**`,
+                    "activitySubtitle": "GitHub Actions Workflow Notification",
+                    "facts": [{
+                        "name": "Repository",
+                        "value": process.env.GITHUB_REPOSITORY
+                    }, {
+                        "name": "Branch",
+                        "value": process.env.GITHUB_REF
+                    }, {
+                        "name": "Commit",
+                        "value": process.env.GITHUB_SHA
+                    }, {
+                        "name": "Status",
+                        "value": `**${jobStatus.toUpperCase()}**`
+                    }, {
+                        "name": "Triggered by",
+                        "value": process.env.GITHUB_ACTOR
+                    }],
+                    "markdown": true
+                }]
+            };
+
+            // 🔹 Enviar la notificación a Microsoft Teams
             await axios.post(webhookUrl, payload);
             console.log("✅ Notification sent successfully!");
         } else {
@@ -34700,6 +34738,7 @@ async function sendNotification() {
 }
 
 sendNotification();
+
 module.exports = __webpack_exports__;
 /******/ })()
 ;
