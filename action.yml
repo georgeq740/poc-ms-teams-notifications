@@ -1,16 +1,25 @@
-name: "Microsoft Teams Notifier"
-description: "Send notifications to Microsoft Teams from GitHub Actions"
-author: "Jorge Quitian"
+name: 'MS Teams Notification'
+description: 'Send a notification to Microsoft Teams'
+author: 'Tu Nombre o Empresa'
+branding:
+  icon: 'message-square'
+  color: 'blue'
+
 inputs:
   webhook_url:
-    description: "Incoming Webhook URL from Microsoft Teams"
+    description: 'The webhook URL for Microsoft Teams'
     required: true
   message:
-    description: "Message to send to Teams"
+    description: 'The message to send'
     required: true
+  notify_on:
+    description: 'When to send notifications (success, failure, both)'
+    required: false
+    default: 'both'
+  job_status:
+    description: 'Status of the GitHub Actions job (success or failure)'
+    required: true
+
 runs:
-  using: "node16"
-  main: "src/index.js"
-branding:
-  icon: "message-square"
-  color: "blue"
+  using: 'node16'
+  main: 'src/index.js'
