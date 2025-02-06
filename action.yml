@@ -1,6 +1,6 @@
 name: 'MS Teams Notification'
 description: 'Send a notification to Microsoft Teams'
-author: 'Tu Nombre o Empresa'
+author: 'Jorge Luis Quitian'
 branding:
   icon: 'message-square'
   color: 'blue'
