@@ -7,6 +7,7 @@ async function sendNotification() {
         const message = core.getInput('message');
         const notifyOn = core.getInput('notify_on'); // Puede ser 'success', 'failure' o 'both'
         const jobStatus = core.getInput('job_status'); // Estado del job en GitHub Actions
+        const errorMessage = core.getInput('error_message') || "No error details available."; // Capturar el mensaje de error
 
         console.log(`📢 Notification settings - notify_on: ${notifyOn}, job_status: ${jobStatus}`);
 
@@ -22,10 +23,10 @@ async function sendNotification() {
             if (jobStatus !== "success") {
                 color = "FF0000"; // Rojo para fallo
                 statusEmoji = "❌"; // Cruz roja
-                failureMessage = "\n⚠️ **Tarea pendiente:** Revisar logs y corregir errores."; // Mensaje extra
+                failureMessage = `⚠️ **Error:** ${errorMessage}`; // Mostrar el mensaje de error real
             }
 
-            // 🔹 Crear payload para Microsoft Teams con sección de fallo
+            // 🔹 Crear payload para Microsoft Teams con sección de error
             const payload = {
                 "@type": "MessageCard",
                 "@context": "http://schema.org/extensions",
@@ -54,10 +55,10 @@ async function sendNotification() {
                 }]
             };
 
-            // 🔹 Si falló, agregar sección de "Tarea Pendiente"
+            // 🔹 Si falló, agregar sección con el mensaje de error
             if (jobStatus !== "success") {
                 payload.sections.push({
-                    "activityTitle": "🚨 **Acción Requerida**",
+                    "activityTitle": "🚨 **Error Detectado**",
                     "text": failureMessage
                 });
             }
