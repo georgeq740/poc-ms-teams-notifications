@@ -9,12 +9,9 @@ inputs:
   webhook_url:
     description: 'The webhook URL for Microsoft Teams'
     required: true
-  webhook_urls:
-    description: 'A list of webhook URLs for multiple Teams channels'
-    required: false
   message:
     description: 'The message to send'
-    required: false
+    required: true
   notify_on:
     description: 'When to send notifications (success, failure, both)'
     required: false
@@ -23,14 +20,13 @@ inputs:
     description: 'Status of the GitHub Actions job (success or failure)'
     required: true
   environment:
-    description: 'Environment in which the workflow is running'
+    description: 'Deployment environment (e.g., production, staging, development)'
     required: false
-  error_message:
-    description: 'Error message from the failed job'
-    required: false
+    default: 'Not Set'
   custom_fields:
-    description: 'Additional custom fields in JSON format'
+    description: 'Custom JSON object with additional fields'
     required: false
+    default: '{}'
 
 runs:
   using: 'node16'
