@@ -7,7 +7,7 @@ async function sendNotification() {
         const webhookUrl = core.getInput('webhook_url');
         const message = core.getInput('message');
         const notifyOn = core.getInput('notify_on');
-        const jobStatus = core.getInput('job_status');  // ✅ Se asegura de que esté definido
+        const jobStatus = core.getInput('job_status');  // ✅ Asegurar que jobStatus esté definido
         const environment = core.getInput('environment') || "Not Set";
         const customFieldsInput = core.getInput('custom_fields') || "{}";
 
@@ -18,6 +18,12 @@ async function sendNotification() {
             core.setFailed("❌ Error: 'job_status' input is missing or invalid.");
             return;
         }
+
+        // 🔹 Construir la URL del workflow en GitHub Actions
+        const githubBaseUrl = process.env.GITHUB_SERVER_URL;  // https://github.com
+        const githubRepo = process.env.GITHUB_REPOSITORY;     // usuario/repo
+        const githubRunId = process.env.GITHUB_RUN_ID;       // ID del workflow en ejecución
+        const workflowUrl = `${githubBaseUrl}/${githubRepo}/actions/runs/${githubRunId}`;
 
         // 🔹 Parsear custom fields
         let customFields = {};
@@ -39,7 +45,7 @@ async function sendNotification() {
         if (jobStatus !== "success") {
             color = "FF0000"; // Rojo para fallo
             statusEmoji = "❌"; // Cruz roja
-            failureMessage = `⚠️ **Error:** ${customFields.error || "No details available."}`;
+            failureMessage = `⚠️ **Error:** ${customFields.error || "No details available."}\n🔍 **[View Logs](${workflowUrl})**`;
         }
 
         // 🔹 Construir payload para Microsoft Teams
@@ -50,12 +56,12 @@ async function sendNotification() {
             "summary": "GitHub Actions Job Notification",
             "sections": [{
                 "activityTitle": `${statusEmoji} **GitHub Actions Workflow Finished!**`,
-                "activitySubtitle": "GitHub Actions Workflow Notification",
+                "activitySubtitle": `[View Workflow Execution](${workflowUrl})`, // ✅ Ahora se muestra la URL del workflow
                 "facts": [
                     { "name": "Repository", "value": process.env.GITHUB_REPOSITORY },
                     { "name": "Branch", "value": process.env.GITHUB_REF },
                     { "name": "Commit", "value": process.env.GITHUB_SHA },
-                    { "name": "Status", "value": `**${jobStatus.toUpperCase()}**` }, // ✅ jobStatus ya no estará indefinido
+                    { "name": "Status", "value": `**${jobStatus.toUpperCase()}**` },
                     { "name": "Triggered by", "value": process.env.GITHUB_ACTOR },
                     { "name": "Environment", "value": environment }
                 ],
@@ -63,13 +69,22 @@ async function sendNotification() {
             }]
         };
 
-        // 🔹 Si falló, agregar la sección de error
+        // 🔹 Si falló, agregar la sección de error con la URL a los logs
         if (jobStatus !== "success") {
             payload.sections.push({
                 "activityTitle": "🚨 **Error Detectado**",
                 "text": failureMessage
             });
         }
+
+        // 🔹 Agregar botón para abrir los logs en GitHub Actions
+        payload.potentialAction = [
+            {
+                "@type": "OpenUri",
+                "name": "🔍 View Logs",
+                "targets": [{ "os": "default", "uri": workflowUrl }]
+            }
+        ];
 
         // 🔹 Enviar la notificación al webhook único
         try {
