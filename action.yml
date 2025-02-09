@@ -1,6 +1,6 @@
 name: 'MS Teams Notification'
 description: 'Send a notification to Microsoft Teams'
-author: 'Jorge Luis Quitian'
+author: 'Tu Nombre o Empresa'
 branding:
   icon: 'message-square'
   color: 'blue'
@@ -9,9 +9,12 @@ inputs:
   webhook_url:
     description: 'The webhook URL for Microsoft Teams'
     required: true
+  webhook_urls:
+    description: 'A list of webhook URLs for multiple Teams channels'
+    required: false
   message:
     description: 'The message to send'
-    required: true
+    required: false
   notify_on:
     description: 'When to send notifications (success, failure, both)'
     required: false
@@ -19,6 +22,15 @@ inputs:
   job_status:
     description: 'Status of the GitHub Actions job (success or failure)'
     required: true
+  environment:
+    description: 'Environment in which the workflow is running'
+    required: false
+  error_message:
+    description: 'Error message from the failed job'
+    required: false
+  custom_fields:
+    description: 'Additional custom fields in JSON format'
+    required: false
 
 runs:
   using: 'node16'
