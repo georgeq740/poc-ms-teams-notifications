@@ -35876,22 +35876,16 @@ async function sendNotification() {
         const webhookUrl = core.getInput('webhook_url');
         const message = core.getInput('message');
         const notifyOn = core.getInput('notify_on');
-        const jobStatus = core.getInput('job_status');  // ✅ Asegurar que jobStatus esté definido
+        const jobStatus = core.getInput('job_status') || "unknown";  // ✅ Asegurar que jobStatus esté definido
         const environment = core.getInput('environment') || "Not Set";
         const customFieldsInput = core.getInput('custom_fields') || "{}";
 
         console.log(`📢 Notification settings - notify_on: ${notifyOn}, job_status: ${jobStatus}, environment: ${environment}`);
 
-        // 🔹 Validar que jobStatus tenga un valor válido
-        if (!jobStatus) {
-            core.setFailed("❌ Error: 'job_status' input is missing or invalid.");
-            return;
-        }
-
         // 🔹 Construir la URL del workflow en GitHub Actions
-        const githubBaseUrl = process.env.GITHUB_SERVER_URL;  // https://github.com
-        const githubRepo = process.env.GITHUB_REPOSITORY;     // usuario/repo
-        const githubRunId = process.env.GITHUB_RUN_ID;       // ID del workflow en ejecución
+        const githubBaseUrl = process.env.GITHUB_SERVER_URL || "https://github.com";
+        const githubRepo = process.env.GITHUB_REPOSITORY || "unknown/repo";
+        const githubRunId = process.env.GITHUB_RUN_ID || "unknown_run";
         const workflowUrl = `${githubBaseUrl}/${githubRepo}/actions/runs/${githubRunId}`;
 
         // 🔹 Parsear custom fields
@@ -35914,7 +35908,7 @@ async function sendNotification() {
         if (jobStatus !== "success") {
             color = "FF0000"; // Rojo para fallo
             statusEmoji = "❌"; // Cruz roja
-            failureMessage = `⚠️ **Error:** ${customFields.error || "No details available."}\n🔍 **[View Logs](${workflowUrl})**`;
+            failureMessage = `⚠️ **Error:** ${customFields["Error Details"] || "No details available."}\n🔍 **[View Logs](${workflowUrl})**`;
         }
 
         // 🔹 Construir payload para Microsoft Teams
@@ -35925,13 +35919,13 @@ async function sendNotification() {
             "summary": "GitHub Actions Job Notification",
             "sections": [{
                 "activityTitle": `${statusEmoji} **GitHub Actions Workflow Finished!**`,
-                "activitySubtitle": `[View Workflow Execution](${workflowUrl})`, // ✅ Ahora se muestra la URL del workflow
+                "activitySubtitle": `[View Workflow Execution](${workflowUrl})`,
                 "facts": [
-                    { "name": "Repository", "value": process.env.GITHUB_REPOSITORY },
-                    { "name": "Branch", "value": process.env.GITHUB_REF },
-                    { "name": "Commit", "value": process.env.GITHUB_SHA },
+                    { "name": "Repository", "value": githubRepo },
+                    { "name": "Branch", "value": process.env.GITHUB_REF || "Unknown" },
+                    { "name": "Commit", "value": process.env.GITHUB_SHA || "Unknown" },
                     { "name": "Status", "value": `**${jobStatus.toUpperCase()}**` },
-                    { "name": "Triggered by", "value": process.env.GITHUB_ACTOR },
+                    { "name": "Triggered by", "value": process.env.GITHUB_ACTOR || "Unknown" },
                     { "name": "Environment", "value": environment }
                 ],
                 "markdown": true
@@ -35969,6 +35963,7 @@ async function sendNotification() {
 }
 
 sendNotification();
+
 })();
 
 module.exports = __webpack_exports__;
